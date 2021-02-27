@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+
+  api:
+    build:
+      context: api
+    depends_on:
+      - mongo
+    labels:
+      - traefik.http.routers.urlshortener-api.rule=Host(`foo.bar.localhost`)
+      - traefik.http.services.urlshortener-api.loadbalancer.server.port=3000
+    networks:
+      - web
+      - urlshortener
+    environment:
+      - ENV=production
+      - API_DOMAIN=foo.bar.localhost
+      - API_PORT=:3000
+      - GIN_MODE=release
+      - MONGO_HOST=mongodb://mongo:27017
+      - MONGO_USERNAME=root
+      - MONGO_PASSWORD=root
+
+  mongo:
+    image: mongo:4.2-bionic
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - urlshortener
+   
+
+  traefik:
+    image: traefik:v2.4.5
+    ports:
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8282:8080"
+    networks:
+      - web
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.toml:/etc/traefik/traefik.toml
+    labels:
+      - traefik.http.routers.http_catchall.rule=HostRegexp(`{any:.+}`)
+      - traefik.http.routers.http_catchall.entrypoints=web
+
+volumes:
+  mongo-data:
+    driver: "local"
+
+networks:
+  urlshortener:
+  web:
+    external: true

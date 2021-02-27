@@ -1,0 +1,53 @@
+################################################################
+# Global configuration
+################################################################
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = false
+
+################################################################
+# Entrypoints configuration
+################################################################
+
+# Entrypoints definition
+#
+# Optional
+# Default:
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+
+################################################################
+# API and dashboard configuration
+################################################################
+
+# Enable API and dashboard
+[api]
+
+  # Enable the API in insecure mode
+  #
+  # Optional
+  # Default: true
+  #
+  insecure = true
+
+  # Enabled Dashboard
+  #
+  # Optional
+  # Default: true
+  #
+  dashboard = true
+
+################################################################
+# Docker configuration backend
+################################################################
+
+# Enable Docker configuration backend
+[providers.docker]
+  network = "web"
+  # Docker server endpoint. Can be a tcp or a unix socket endpoint.
+  #
+  # Required
+  # Default: "unix:///var/run/docker.sock"
+  #
+  endpoint = "unix:///var/run/docker.sock"
