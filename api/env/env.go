@@ -13,8 +13,8 @@ type Environment struct {
 	ApiDomain     string `env:"API_DOMAIN,default=foo.bar.localhost"`
 	ApiPort       string `env:"API_PORT,default=:3000"`
 	MongoHost     string `env:"MONGO_HOST,default=mongodb://127.0.0.1:27017"`
-	MongoUsername string `env:"MONGO_USERNAME,default=:root"`
-	MongoPassword string `env:"MONGO_PASSWORD,default=:root"`
+	MongoUsername string `env:"MONGO_USERNAME,default=root"`
+	MongoPassword string `env:"MONGO_PASSWORD,default=root"`
 }
 
 var environment Environment
