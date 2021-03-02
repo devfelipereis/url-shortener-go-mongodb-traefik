@@ -1,4 +1,4 @@
-# A simple url shortener using Go, Mongodb and Traefik (load balancing)
+# A simple url shortener using Go, MongoDB and Traefik (load balancing)
 
 ## Tech
 
