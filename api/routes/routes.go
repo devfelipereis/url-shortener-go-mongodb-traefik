@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -27,7 +28,20 @@ type LinkSchema struct {
 	CreatedAt time.Time          `bson:"createdAt"`
 }
 
-var linksCollection = database.Connect().Database("mydatabase").Collection(COLLECTION) // get collection "links" from mongo.Connect() which returns *mongo.Client
+var linksCollection *mongo.Collection
+
+func init() {
+	linksCollection = database.Connect().Database("mydatabase").Collection(COLLECTION)
+	indexModel := mongo.IndexModel{
+		Keys: bson.M{
+			"code": 1, // index in ascending order
+		}, Options: options.Index().SetUnique(true),
+	}
+
+	if _, err := linksCollection.Indexes().CreateOne(context.TODO(), indexModel); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func Home(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Welcome to the api"})
@@ -69,6 +83,31 @@ func Generate(c *gin.Context) {
 	}
 
 	code := randomCode()
+	maxTries := 1000
+	found := false
+
+	for {
+		if maxTries == 0 {
+			break
+		}
+		var doc LinkSchema
+		err := linksCollection.FindOne(context.TODO(), bson.M{"code": code}).Decode(&doc)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				found = true
+				break
+			}
+			log.Fatal(err)
+		}
+		maxTries--
+		code = randomCode()
+	}
+
+	if !found {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible to create more links"})
+		return
+	}
+
 	link := &LinkSchema{
 		ID:        primitive.NewObjectID(),
 		Code:      code,
